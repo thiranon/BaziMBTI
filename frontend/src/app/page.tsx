@@ -5,14 +5,17 @@ import { AnalyzeResponse, CompareResponse, ProfileInput } from "@/types";
 import ProfileForm from "@/components/ProfileForm";
 import ManualView from "@/components/ManualView";
 import SynergyMatrix from "@/components/SynergyMatrix";
-import { BookOpen, Moon, ShieldAlert, Sun, Trash2, Users } from "lucide-react";
+import { BookOpen, Monitor, Moon, ShieldAlert, Sun, Trash2, Users } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const SESSION_STORAGE_KEY = "team_synergy_profiles_v1";
+const THEME_STORAGE_KEY = "team_synergy_theme";
+type ThemeMode = "system" | "light" | "dark";
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<"manual" | "compare">("manual");
-  const [darkMode, setDarkMode] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
+  const [systemDark, setSystemDark] = useState(false);
 
   const [savedProfiles, setSavedProfiles] = useState<AnalyzeResponse[]>([]);
   const [selectedProfileIdx, setSelectedProfileIdx] = useState<number>(0);
@@ -31,19 +34,46 @@ export default function HomePage() {
           setSavedProfiles(parsed);
         }
       }
+      const savedTheme = sessionStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
+      if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+        setThemeMode(savedTheme);
+      }
     } catch {
       // Ignore invalid session state
     }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setSystemDark(mediaQuery.matches);
+
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      setSystemDark(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
   }, []);
+
+  const isDarkEffective = themeMode === "system" ? systemDark : themeMode === "dark";
 
   useEffect(() => {
     const root = document.documentElement;
-    if (darkMode) {
+    if (isDarkEffective) {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
     }
-  }, [darkMode]);
+  }, [isDarkEffective]);
+
+  const handleCycleTheme = () => {
+    const nextMode: ThemeMode =
+      themeMode === "system" ? (systemDark ? "light" : "dark") : themeMode === "dark" ? "light" : "system";
+    setThemeMode(nextMode);
+    try {
+      sessionStorage.setItem(THEME_STORAGE_KEY, nextMode);
+    } catch {
+      // Ignore storage errors
+    }
+  };
 
   const saveToSession = (list: AnalyzeResponse[]) => {
     setSavedProfiles(list);
@@ -175,13 +205,33 @@ export default function HomePage() {
               </button>
             </div>
 
-            {/* Theme Toggle */}
+            {/* Theme Toggle (System / Light / Dark) */}
             <button
-              onClick={() => setDarkMode(!darkMode)}
-              aria-label="Toggle Dark Mode"
-              className="rounded-xl border border-slate-200 dark:border-slate-700 p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              onClick={handleCycleTheme}
+              title={
+                themeMode === "system"
+                  ? `โหมดตามระบบอัตโนมัติ (${isDarkEffective ? "Dark" : "Light"})`
+                  : `โหมด ${themeMode === "dark" ? "Dark" : "Light"} (คลิกเพื่อสลับ)`
+              }
+              aria-label="Toggle Theme Mode"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 px-2.5 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {themeMode === "system" ? (
+                <>
+                  <Monitor className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <span className="hidden sm:inline">System</span>
+                </>
+              ) : isDarkEffective ? (
+                <>
+                  <Moon className="w-4 h-4 text-amber-400" />
+                  <span className="hidden sm:inline">Dark</span>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-4 h-4 text-amber-500" />
+                  <span className="hidden sm:inline">Light</span>
+                </>
+              )}
             </button>
           </div>
         </div>
