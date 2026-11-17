@@ -5,6 +5,7 @@ import { AnalyzeResponse, CompareResponse, ProfileInput } from "@/types";
 import ProfileForm from "@/components/ProfileForm";
 import ManualView from "@/components/ManualView";
 import SynergyMatrix from "@/components/SynergyMatrix";
+import { UI_IRASUTOYA } from "@/lib/irasutoya";
 import { BookOpen, Monitor, Moon, ShieldAlert, Sun, Trash2, Users } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -169,13 +170,20 @@ export default function HomePage() {
       {/* Top Navbar */}
       <header className="sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800 bg-white/85 dark:bg-slate-900/85 backdrop-blur">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
-              Team Synergy &amp; Work Manual Engine
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              BaZi Four Pillars × MBTI Cognitive Functions × RACI Matrix
-            </p>
+          <div className="flex items-center gap-3">
+            <img
+              src={UI_IRASUTOYA.gogyou}
+              alt="Five Elements"
+              className="w-10 h-10 object-contain"
+            />
+            <div>
+              <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Team Synergy &amp; Work Manual Engine
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                BaZi Four Pillars × MBTI Cognitive Functions × RACI Matrix
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

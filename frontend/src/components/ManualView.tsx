@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { AnalyzeResponse } from "@/types";
 import PillarCard from "./PillarCard";
+import { STEM_IRASUTOYA_MAP, UI_IRASUTOYA } from "@/lib/irasutoya";
 import {
   AlertTriangle,
   Brain,
@@ -20,6 +21,7 @@ interface ManualViewProps {
 export default function ManualView({ data }: ManualViewProps) {
   const { profile, manual, synthesis_mode } = data;
   const [copied, setCopied] = useState(false);
+  const stemAvatar = STEM_IRASUTOYA_MAP[profile.bazi.day_master.char] || UI_IRASUTOYA.gogyou;
 
   const handleCopySummary = async () => {
     const summaryText = [
@@ -46,24 +48,31 @@ export default function ManualView({ data }: ManualViewProps) {
       {/* Header Banner */}
       <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 dark:from-indigo-950/40 dark:via-slate-900 dark:to-slate-900 p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white">
-                {profile.mbti.code}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                {profile.role}
-              </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                โหมดสังเคราะห์: {synthesis_mode === "llm" ? "AI Synthesis" : "Deterministic Engine"}
-              </span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <img
+              src={stemAvatar}
+              alt={profile.bazi.day_master.name_th}
+              className="w-20 h-20 object-contain rounded-2xl bg-white dark:bg-slate-800 p-2 border border-indigo-100 dark:border-slate-700 shadow-sm shrink-0"
+            />
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white">
+                  {profile.mbti.code}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {profile.role}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  โหมดสังเคราะห์: {synthesis_mode === "llm" ? "AI Synthesis" : "Deterministic Engine"}
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+                {profile.name} — “{manual.archetype_title}”
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
+                {manual.core_energy_summary}
+              </p>
             </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              {profile.name} — “{manual.archetype_title}”
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
-              {manual.core_energy_summary}
-            </p>
           </div>
 
           <button
@@ -137,11 +146,18 @@ export default function ManualView({ data }: ManualViewProps) {
       {/* Communication Cheat Sheet & Stress Protocol */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-            <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Communication Cheat Sheet (วิธีบรีฟและคุยงาน)
-            </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Communication Cheat Sheet (วิธีบรีฟและคุยงาน)
+              </h3>
+            </div>
+            <img
+              src={UI_IRASUTOYA.meetingSmile}
+              alt="Meeting"
+              className="w-10 h-10 object-contain"
+            />
           </div>
 
           <div className="space-y-3">
@@ -170,13 +186,20 @@ export default function ManualView({ data }: ManualViewProps) {
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Stress & Grip Protocol (คู่มือรับมือยามฉุกเฉิน)
-              </h3>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Stress &amp; Grip Protocol (คู่มือรับมือยามฉุกเฉิน)
+                </h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
+                  {manual.stress_and_grip_protocol.confidence_tag}
+                </span>
+              </div>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">
-              {manual.stress_and_grip_protocol.confidence_tag}
-            </span>
+            <img
+              src={UI_IRASUTOYA.stressCheck}
+              alt="Stress Check"
+              className="w-10 h-10 object-contain"
+            />
           </div>
 
           <div className="space-y-3">

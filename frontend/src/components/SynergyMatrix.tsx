@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { AnalyzeResponse, CompareResponse } from "@/types";
+import { STEM_IRASUTOYA_MAP, UI_IRASUTOYA } from "@/lib/irasutoya";
 import {
   AlertCircle,
   CheckCircle2,
@@ -9,7 +10,6 @@ import {
   Handshake,
   Loader2,
   Sparkles,
-  Users,
   XCircle,
 } from "lucide-react";
 
@@ -31,8 +31,12 @@ export default function SynergyMatrix({
 
   if (savedProfiles.length < 2) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center space-y-2">
-        <Users className="w-8 h-8 text-slate-400 mx-auto" />
+      <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center space-y-3">
+        <img
+          src={UI_IRASUTOYA.teamHuddle}
+          alt="Team Huddle"
+          className="w-28 h-28 object-contain mx-auto"
+        />
         <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
           ต้องมีโปรไฟล์สมาชิกในทีมอย่างน้อย 2 คนเพื่อเปรียบเทียบ
         </h3>
@@ -55,16 +59,23 @@ export default function SynergyMatrix({
     <div className="space-y-6">
       {/* Selector Card */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-          <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              จับคู่วิเคราะห์เคมีการทำงาน (Pairwise Team Synergy Matrix)
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              เลือกเพื่อนร่วมงาน 2 คนเพื่อดูจุดเสริมพลัง (Power Combo), โอกาสปะทะ (Friction Triggers) และกติกาทำงานร่วมกัน
-            </p>
+        <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <Handshake className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                จับคู่วิเคราะห์เคมีการทำงาน (Pairwise Team Synergy Matrix)
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                เลือกเพื่อนร่วมงาน 2 คนเพื่อดูจุดเสริมพลัง (Power Combo), โอกาสปะทะ (Friction Triggers) และกติกาทำงานร่วมกัน
+              </p>
+            </div>
           </div>
+          <img
+            src={UI_IRASUTOYA.teamCircle}
+            alt="Team Synergy"
+            className="w-12 h-12 object-contain hidden sm:block"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -125,17 +136,37 @@ export default function SynergyMatrix({
           {/* Top Synergy Score Card */}
           <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/90 via-white to-slate-50 dark:from-indigo-950/40 dark:via-slate-900 dark:to-slate-900 p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  Pairwise Operating Protocol • {compareResult.cross_bazi.day_master_pair}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-                  {compareResult.synergy.duo_codename}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  {compareResult.person_a.name} ({compareResult.person_a.mbti.code}) ×{" "}
-                  {compareResult.person_b.name} ({compareResult.person_b.mbti.code})
-                </p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center -space-x-3 shrink-0">
+                  <img
+                    src={
+                      STEM_IRASUTOYA_MAP[compareResult.person_a.bazi.day_master.char] ||
+                      UI_IRASUTOYA.gogyou
+                    }
+                    alt={compareResult.person_a.name}
+                    className="w-16 h-16 object-contain rounded-2xl bg-white dark:bg-slate-800 p-1.5 border border-indigo-200 dark:border-slate-700 shadow-sm"
+                  />
+                  <img
+                    src={
+                      STEM_IRASUTOYA_MAP[compareResult.person_b.bazi.day_master.char] ||
+                      UI_IRASUTOYA.gogyou
+                    }
+                    alt={compareResult.person_b.name}
+                    className="w-16 h-16 object-contain rounded-2xl bg-white dark:bg-slate-800 p-1.5 border border-indigo-200 dark:border-slate-700 shadow-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    Pairwise Operating Protocol • {compareResult.cross_bazi.day_master_pair}
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+                    {compareResult.synergy.duo_codename}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    {compareResult.person_a.name} ({compareResult.person_a.mbti.code}) ×{" "}
+                    {compareResult.person_b.name} ({compareResult.person_b.mbti.code})
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center gap-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-5 py-3 shadow-sm">
@@ -210,7 +241,7 @@ export default function SynergyMatrix({
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
               <AlertCircle className="w-5 h-5 text-amber-500" />
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                จุดเสี่ยงขัดแย้งและกติกาป้องกันดราม่า (Friction Triggers & Mitigation Rules)
+                จุดเสี่ยงขัดแย้งและกติกาป้องกันดราม่า (Friction Triggers &amp; Mitigation Rules)
               </h4>
             </div>
 

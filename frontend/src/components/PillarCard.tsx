@@ -2,7 +2,12 @@
 
 import React from "react";
 import { BaziData, ElementType, PillarInfo } from "@/types";
-import { Compass, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
+import {
+  BRANCH_IRASUTOYA_MAP,
+  STEM_IRASUTOYA_MAP,
+  UI_IRASUTOYA,
+} from "@/lib/irasutoya";
 
 const ELEMENT_BADGE: Record<ElementType, string> = {
   Wood: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
@@ -30,13 +35,15 @@ interface SinglePillarBoxProps {
 function SinglePillarBox({ label, sublabel, pillar, isDayMaster }: SinglePillarBoxProps) {
   if (!pillar) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 flex flex-col items-center justify-center text-center min-h-[140px] bg-slate-50/50 dark:bg-slate-900/40">
+      <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-3 flex flex-col items-center justify-center text-center min-h-[170px] bg-slate-50/50 dark:bg-slate-900/40">
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</span>
         <span className="text-[11px] text-slate-400 dark:text-slate-500 mb-2">{sublabel}</span>
         <span className="text-xs text-slate-400 dark:text-slate-500">ไม่ระบุเวลาเกิด</span>
       </div>
     );
   }
+
+  const branchImg = BRANCH_IRASUTOYA_MAP[pillar.branch];
 
   return (
     <div
@@ -54,9 +61,17 @@ function SinglePillarBox({ label, sublabel, pillar, isDayMaster }: SinglePillarB
           </span>
         )}
       </div>
-      <span className="text-[11px] text-slate-400 dark:text-slate-500 mb-2">{sublabel}</span>
+      <span className="text-[11px] text-slate-400 dark:text-slate-500 mb-1.5">{sublabel}</span>
 
-      <div className="text-2xl font-bold tracking-widest text-slate-900 dark:text-white my-1">
+      {branchImg && (
+        <img
+          src={branchImg}
+          alt={pillar.branch_animal}
+          className="w-12 h-12 object-contain my-1 drop-shadow-sm"
+        />
+      )}
+
+      <div className="text-xl font-bold tracking-widest text-slate-900 dark:text-white my-0.5">
         {pillar.raw}
       </div>
 
@@ -86,12 +101,17 @@ interface PillarCardProps {
 
 export default function PillarCard({ bazi }: PillarCardProps) {
   const { day_master, pillars, true_solar_time, province, internal_interactions } = bazi;
+  const stemImg = STEM_IRASUTOYA_MAP[day_master.char];
 
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-        <div className="flex items-center gap-2">
-          <Compass className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="flex items-center gap-2.5">
+          <img
+            src={UI_IRASUTOYA.gogyou}
+            alt="Five Elements"
+            className="w-9 h-9 object-contain"
+          />
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               โครงสร้าง 4 เสาหลัก (BaZi Four Pillars)
@@ -120,26 +140,35 @@ export default function PillarCard({ bazi }: PillarCardProps) {
         <SinglePillarBox label="เสาปี" sublabel="ภาพลักษณ์/สังคม" pillar={pillars.year} />
       </div>
 
-      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 text-xs space-y-1.5">
-        <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>อุปมาพลังงานการทำงาน (Day Master Metaphor):</span>
-        </div>
-        <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-          {day_master.work_metaphor}
-        </p>
-        {internal_interactions.length > 0 && (
-          <div className="pt-1 flex flex-wrap gap-1.5">
-            {internal_interactions.map((item, idx) => (
-              <span
-                key={idx}
-                className="px-2 py-0.5 rounded bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[11px]"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
+      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3.5 text-xs flex flex-col sm:flex-row items-center gap-3.5">
+        {stemImg && (
+          <img
+            src={stemImg}
+            alt={day_master.name_th}
+            className="w-16 h-16 object-contain shrink-0 rounded-xl bg-white dark:bg-slate-900 p-1.5 border border-slate-200 dark:border-slate-700"
+          />
         )}
+        <div className="space-y-1.5 flex-1">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>อุปมาพลังงานการทำงาน ({day_master.name_th}):</span>
+          </div>
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+            {day_master.work_metaphor}
+          </p>
+          {internal_interactions.length > 0 && (
+            <div className="pt-1 flex flex-wrap gap-1.5">
+              {internal_interactions.map((item, idx) => (
+                <span
+                  key={idx}
+                  className="px-2 py-0.5 rounded bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[11px]"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
