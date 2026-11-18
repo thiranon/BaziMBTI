@@ -6,9 +6,10 @@ import ProfileForm from "@/components/ProfileForm";
 import ManualView from "@/components/ManualView";
 import SynergyMatrix from "@/components/SynergyMatrix";
 import { UI_IRASUTOYA } from "@/lib/irasutoya";
-import { BookOpen, Monitor, Moon, ShieldAlert, Sun, Trash2, Users } from "lucide-react";
+import { analyzeLocal, compareLocal } from "@/lib/localEngine";
+import { BookOpen, Brain, Monitor, Moon, ShieldAlert, Sun, Trash2, Users } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/bazimbti/api";
 const SESSION_STORAGE_KEY = "team_synergy_profiles_v1";
 const THEME_STORAGE_KEY = "team_synergy_theme";
 type ThemeMode = "system" | "light" | "dark";
@@ -89,23 +90,27 @@ export default function HomePage() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await fetch(`${API_BASE}/analyze`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
+      let data: AnalyzeResponse;
+      try {
+        const res = await fetch(`${API_BASE}/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `HTTP Error ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status}`);
+        }
+        data = await res.json();
+      } catch {
+        data = analyzeLocal(input);
       }
 
-      const data: AnalyzeResponse = await res.json();
       const updated = [data, ...savedProfiles];
       saveToSession(updated);
       setSelectedProfileIdx(0);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อ Backend API ได้";
+      const msg = err instanceof Error ? err.message : "ไม่สามารถคำนวณข้อมูลได้";
       setErrorMsg(msg);
     } finally {
       setIsLoading(false);
@@ -135,18 +140,22 @@ export default function HomePage() {
         },
       };
 
-      const res = await fetch(`${API_BASE}/compare`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let data: CompareResponse;
+      try {
+        const res = await fetch(`${API_BASE}/compare`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `HTTP Error ${res.status}`);
+        if (!res.ok) {
+          throw new Error(`HTTP Error ${res.status}`);
+        }
+        data = await res.json();
+      } catch {
+        data = compareLocal(payload.person_a, payload.person_b);
       }
 
-      const data: CompareResponse = await res.json();
       setCompareResult(data);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "ไม่สามารถเปรียบเทียบข้อมูลได้";
@@ -212,6 +221,15 @@ export default function HomePage() {
                 Team Matrix ({savedProfiles.length})
               </button>
             </div>
+
+            {/* Cross-link to MBTI Assessment & 16 Types */}
+            <a
+              href="/mbti/"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 text-xs font-semibold shadow-sm transition-colors"
+            >
+              <Brain className="w-3.5 h-3.5" />
+              <span>แบบทดสอบ MBTI</span>
+            </a>
 
             {/* Theme Toggle (System / Light / Dark) */}
             <button
@@ -303,13 +321,21 @@ export default function HomePage() {
 
       {/* Disclaimer Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-4 sm:px-6 mt-12">
-        <div className="max-w-6xl mx-auto flex items-start sm:items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <ShieldAlert className="w-4 h-4 text-slate-400 shrink-0 mt-0.5 sm:mt-0" />
-          <p>
-            <strong>ข้อจำกัดความรับผิดชอบ (Disclaimer):</strong> ระบบนี้ใช้โครงสร้างธาตุตามปฏิทินสุริยคติ (BaZi)
-            เป็นกรอบอุปมาเชิงพลังงานควบคู่กับจิตวิทยา MBTI และ RACI เพื่อส่งเสริมการสื่อสารและความเข้าใจในทีมเท่านั้น
-            ไม่ใช่การทำนายโชคชะตา ไม่ใช่เกณฑ์ประเมินผลปฏิบัติงาน (HR Evaluation) และไม่บันทึกข้อมูลส่วนบุคคลลงฐานข้อมูลถาวร (Stateless &amp; PDPA-First)
-          </p>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-start sm:items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-slate-400 shrink-0 mt-0.5 sm:mt-0" />
+            <p>
+              <strong>ข้อจำกัดความรับผิดชอบ (Disclaimer):</strong> ระบบนี้ใช้โครงสร้างธาตุตามปฏิทินสุริยคติ (BaZi)
+              เป็นกรอบอุปมาเชิงพลังงานควบคู่กับจิตวิทยา MBTI และ RACI เพื่อส่งเสริมการสื่อสารและความเข้าใจในทีมเท่านั้น
+              ไม่ใช่การทำนายโชคชะตา ไม่ใช่เกณฑ์ประเมินผลปฏิบัติงาน (HR Evaluation) และไม่บันทึกข้อมูลส่วนบุคคลลงฐานข้อมูลถาวร (Stateless &amp; PDPA-First)
+            </p>
+          </div>
+          <a
+            href="/mbti/"
+            className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline font-semibold shrink-0"
+          >
+            ทำแบบทดสอบ MBTI &amp; 16 ไทป์ →
+          </a>
         </div>
       </footer>
     </div>

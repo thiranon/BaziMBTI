@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ProfileInput } from "@/types";
 import { Loader2, UserPlus } from "lucide-react";
 
@@ -39,6 +39,25 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
   const [province, setProvince] = useState("กรุงเทพมหานคร");
   const [mbtiBase, setMbtiBase] = useState("INTP");
   const [mbtiIdentity, setMbtiIdentity] = useState<"A" | "T">("A");
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const rawMbti = params.get("mbti");
+      if (rawMbti) {
+        const cleaned = rawMbti.trim().toUpperCase();
+        const [base, id] = cleaned.split("-");
+        if (base && MBTI_TYPES.includes(base)) {
+          setMbtiBase(base);
+        }
+        if (id === "A" || id === "T") {
+          setMbtiIdentity(id);
+        }
+      }
+    } catch {
+      // Ignore URL parse errors
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,9 +174,17 @@ export default function ProfileForm({ onSubmit, isLoading }: ProfileFormProps) {
 
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              MBTI (16 Types) *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                MBTI (16 Types) *
+              </label>
+              <a
+                href="/mbti/"
+                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                ไม่แน่ใจไทป์? ทำแบบทดสอบฟรี →
+              </a>
+            </div>
             <select
               value={mbtiBase}
               onChange={(e) => setMbtiBase(e.target.value)}
